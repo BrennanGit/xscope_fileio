@@ -36,7 +36,7 @@ def run_throughput(size_mb):
         byte_array = []
         for line in f.getvalue().splitlines():
             cleaned_line = line.replace("[DEVICE] ", "")
-            print(cleaned_line)
+            # print(cleaned_line)
             items = cleaned_line.split(" ")
             if items[0][0:2] == "0x":
                 for item in items:
@@ -48,6 +48,14 @@ def run_throughput(size_mb):
         stdo_vals.tofile("throughput_stdo.bin")
 
         dut = np.fromfile("throughput_dut.bin", dtype=np.uint8)
+
+        print("ref to stdo:")
+        analyse_error_rate(ref, stdo_vals)
+
+        print("stdo to dut:")
+        analyse_error_rate(stdo_vals, dut)
+        
+
 
         equal = np.array_equal(ref, dut)
         if not equal:
