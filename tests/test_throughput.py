@@ -44,7 +44,7 @@ def run_throughput(size_mb):
                         byte_array.append(int(item, 0))
 
 
-        stdo_vals = numpy.array(byte_array, dtype=np.uint8)
+        stdo_vals = np.array(byte_array, dtype=np.uint8)
         stdo_vals.tofile("throughput_stdo.bin")
 
         dut = np.fromfile("throughput_dut.bin", dtype=np.uint8)
