@@ -6,6 +6,8 @@ import xtagctl
 import contextlib
 import random, string
 from compare_bins import analyse_error_rate
+from contextlib import redirect_stdout
+import io
 
 
 @contextlib.contextmanager
@@ -24,9 +26,26 @@ def run_throughput(size_mb):
         ref = np.random.randint(256, size=(size_mb * 1024 * 1024)).astype(np.uint8)
         ref.tofile("throughput_ref.bin")
 
-        with xtagctl.acquire("XCORE-AI-EXPLORER", timeout=10) as adapter_id:
-            firmware_xe = test_dir + "/../../examples/throughput_c/fileio_test.xe"
-            xscope_fileio.run_on_target(adapter_id, firmware_xe, use_xsim=False)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            with xtagctl.acquire("XCORE-AI-EXPLORER", timeout=10) as adapter_id:
+                firmware_xe = test_dir + "/../../examples/throughput_c/fileio_test.xe"
+                xscope_fileio.run_on_target(adapter_id, firmware_xe, use_xsim=False)
+
+        byte_array = []
+        for line in f.getvalue().splitlines():
+            cleaned_line = line.replace("[DEVICE] ", "")
+            print(cleaned_line)
+            items = cleaned_line.split(" ")
+            if items[0][0:2] == "0x":
+                for item in items:
+                    if item[0:2] == "0x":
+                        byte_array.append(int(item, 0))
+
+
+        stdo_vals = numpy.array(byte_array, dtype=np.uint8)
+        stdo_vals.tofile("throughput_stdo.bin")
 
         dut = np.fromfile("throughput_dut.bin", dtype=np.uint8)
 

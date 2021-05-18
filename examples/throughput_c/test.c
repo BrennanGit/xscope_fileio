@@ -19,6 +19,13 @@ float ticks_to_KBPS(unsigned ticks, unsigned num_bytes){
     return kb/time_s;
 }
 
+void print_buffer(uint8_t *buff, unsigned n){
+    for(unsigned i=0; i<n; i++){
+        printf("0x%02x ", (unsigned int)*(buff+i));
+    }
+    printf("\n");
+}
+
 void do_test(void){
     xscope_file_t read_xscope_file = xscope_open_file(IN_FILE_NAME, "rb");
     xscope_file_t write_xscope_file = xscope_open_file(OUT_FILE_NAME, "wb");
@@ -41,6 +48,9 @@ void do_test(void){
         num_bytes = xscope_fread(&read_xscope_file, buffer, sizeof(buffer));
         unsigned t1 = get_reference_time();
         read_total_time += t1 - t0;
+
+        printf("**** %d %d\n", sizeof(buffer), num_bytes);
+        print_buffer(buffer, num_bytes);
 
         unsigned t2 = get_reference_time();
         xscope_fwrite(&write_xscope_file, buffer, num_bytes);
